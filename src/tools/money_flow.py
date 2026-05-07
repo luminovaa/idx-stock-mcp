@@ -4,7 +4,6 @@ import json
 import numpy as np
 from ..data_sources.yfinance_client import fetch_stock_data
 from ..data_sources.idx_client import fetch_broker_summary, fetch_foreign_flow
-from ..data_sources.ajaib_client import fetch_net_buy_sell
 from ..utils.indicators import calculate_obv, calculate_mfi
 from ..utils.cache import money_flow_cache, get_cache_key
 
@@ -59,9 +58,6 @@ async def get_money_flow(symbol: str) -> str:
         recent_5 = foreign_data[-5:] if len(foreign_data) >= 5 else foreign_data
         foreign_net_5d = sum(item.get("foreignNet", 0) for item in recent_5)
         foreign_net_20d = sum(item.get("foreignNet", 0) for item in foreign_data)
-    
-    # Ajaib net buy/sell
-    ajaib_data = await fetch_net_buy_sell(symbol, days=5)
     
     # Price vs OBV divergence check
     price_change_20d = (float(close.iloc[-1]) - float(close.iloc[-21])) / float(close.iloc[-21]) * 100 if len(close) >= 21 else 0
@@ -125,9 +121,6 @@ async def get_money_flow(symbol: str) -> str:
         "smart_money_score": round(smart_money_score, 1),
         "smart_money_signal": "accumulation" if smart_money_score >= 3.5 else "distribution" if smart_money_score <= 1.5 else "neutral",
     }
-    
-    if ajaib_data:
-        result["ajaib_flow"] = ajaib_data
     
     response = json.dumps(result, ensure_ascii=False)
     money_flow_cache[cache_key] = response
