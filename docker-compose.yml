@@ -1,0 +1,28 @@
+services:
+  idx-stock-mcp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: idx-stock-mcp
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - PYTHONUNBUFFERED=1
+      - MCP_HOST=0.0.0.0
+      - MCP_PORT=8000
+    ports:
+      - "8000:8000"
+    command: ["uv", "run", "python", "-m", "src.server_sse"]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - mcp-network
+
+networks:
+  mcp-network:
+    driver: bridge
