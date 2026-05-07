@@ -21,8 +21,8 @@ services:
       retries: 3
       start_period: 10s
     networks:
-      - mcp-network
+      - global-net
 
 networks:
-  mcp-network:
-    driver: bridge
+  global-net:
+    external: true
